@@ -4,7 +4,6 @@ import (
 	"github.com/adamhei/historicalapi/handlers"
 	"github.com/adamhei/historicalapi/routes"
 	"github.com/adamhei/historicaldata/models"
-	"github.com/adamhei/historicaldata/populators"
 	"gopkg.in/mgo.v2"
 	"log"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 
 func main() {
 	mgoDialInfo := &mgo.DialInfo{
-		Addrs:    []string{populators.DbUrl},
+		Addrs:    []string{models.DbUrl},
 		Timeout:  1 * time.Hour,
 		Database: models.AUTHDB,
 		Username: models.USERNAME,
@@ -27,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	db := sesh.DB(populators.DbName)
+	db := sesh.DB(models.DbName)
 
 	appContext := &handlers.AppContext{Db: db}
 	router := routes.NewRouter(appContext)
