@@ -12,21 +12,8 @@ import (
 
 type Interval string
 
-const (
-	TWOYEAR      Interval = "TWOYEAR"
-	YEAR         Interval = "YEAR"
-	SIXMONTH     Interval = "SIXMONTH"
-	THREEMONTH   Interval = "THREEMONTH"
-	MONTH        Interval = "MONTH"
-	WEEK         Interval = "WEEK"
-	DAY          Interval = "DAY"
-	TWELVEHOUR   Interval = "TWELVEHOUR"
-	SIXHOUR      Interval = "SIXHOUR"
-	HOUR         Interval = "HOUR"
-	THIRTYMINUTE Interval = "THIRTYMINUTE"
-)
-
-func GetHistorical(db *mgo.Database, interval Interval) ([]models.GeminiOrder, *errorhandling.MyError) {
+// TODO Return array of PricePoints
+func QueryGeminiHistorical(db *mgo.Database, interval Interval) ([]models.GeminiOrder, *errorhandling.MyError) {
 	coll := db.C(models.GeminiCollection)
 
 	startTimeMs := getStartTimeMs(interval)

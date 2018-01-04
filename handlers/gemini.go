@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (appContext *AppContext) Historical(w http.ResponseWriter, r *http.Request) {
-	results, err := datamodels.GetHistorical(appContext.Db, datamodels.TWOYEAR)
+func (appContext *AppContext) GeminiHistorical(w http.ResponseWriter, r *http.Request) {
+	results, err := datamodels.QueryGeminiHistorical(appContext.Db, datamodels.TWOYEAR)
 	respond(w, results, err)
 }

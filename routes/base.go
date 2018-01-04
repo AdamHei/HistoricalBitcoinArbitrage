@@ -17,9 +17,16 @@ func getRoutes(appContext *handlers.AppContext) []route {
 	return []route{
 		{
 			Method:      GET,
-			Path:        "/historicaldata/gemini",
+			Path:        "/historical/gemini",
 			Name:        "Gemini Historical",
-			HandlerFunc: appContext.Historical},
+			HandlerFunc: appContext.GeminiHistorical,
+		},
+		{
+			Method:      GET,
+			Path:        "/historical/gdax",
+			Name:        "GDAX Historical",
+			HandlerFunc: appContext.GdaxHistorical,
+		},
 	}
 }
 
