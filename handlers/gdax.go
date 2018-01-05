@@ -2,11 +2,15 @@ package handlers
 
 import (
 	"github.com/adamhei/historicalapi/datamodels"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
 func (appContext *AppContext) GdaxHistorical(responseWriter http.ResponseWriter, req *http.Request) {
-	pricePoints, err := datamodels.PollGdaxHistorical(datamodels.SIXMONTH)
+	args := mux.Vars(req)
+	interval := args["interval"]
+
+	pricePoints, err := datamodels.PollGdaxHistorical(interval)
 
 	if err != nil {
 		respond(responseWriter, nil, err)

@@ -23,7 +23,7 @@ func getRoutes(appContext *handlers.AppContext) []route {
 		},
 		{
 			Method:      GET,
-			Path:        "/historical/gdax",
+			Path:        "/historical/gdax/{interval}",
 			Name:        "GDAX Historical",
 			HandlerFunc: appContext.GdaxHistorical,
 		},

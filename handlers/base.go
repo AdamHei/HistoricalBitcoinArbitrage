@@ -17,6 +17,10 @@ func respond(writer http.ResponseWriter, data interface{}, err *errorhandling.My
 
 	if err != nil {
 		log.Println(err.Err)
+		errCode := err.ErrorCode
+		if errCode == 0 {
+			errCode = http.StatusInternalServerError
+		}
 		http.Error(writer, err.Err, err.ErrorCode)
 	} else {
 		json.NewEncoder(writer).Encode(data)

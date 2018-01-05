@@ -1,17 +1,18 @@
 package datamodels
 
+// Intervals
 const (
-	TWOYEAR      Interval = "TWOYEAR"
-	YEAR         Interval = "YEAR"
-	SIXMONTH     Interval = "SIXMONTH"
-	THREEMONTH   Interval = "THREEMONTH"
-	MONTH        Interval = "MONTH"
-	WEEK         Interval = "WEEK"
-	DAY          Interval = "DAY"
-	TWELVEHOUR   Interval = "TWELVEHOUR"
-	SIXHOUR      Interval = "SIXHOUR"
-	HOUR         Interval = "HOUR"
-	THIRTYMINUTE Interval = "THIRTYMINUTE"
+	TWOYEAR      = "TWOYEAR"
+	YEAR         = "YEAR"
+	SIXMONTH     = "SIXMONTH"
+	THREEMONTH   = "THREEMONTH"
+	MONTH        = "MONTH"
+	WEEK         = "WEEK"
+	DAY          = "DAY"
+	TWELVEHOUR   = "TWELVEHOUR"
+	SIXHOUR      = "SIXHOUR"
+	HOUR         = "HOUR"
+	THIRTYMINUTE = "THIRTYMINUTE"
 )
 
 type PricePoint struct {
