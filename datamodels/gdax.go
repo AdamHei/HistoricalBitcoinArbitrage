@@ -7,6 +7,7 @@ import (
 	"github.com/adamhei/historicaldata/models"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -16,37 +17,37 @@ type timePeriod struct {
 	start, end time.Time
 }
 
-var intervalToGranularity = map[string]int{
-	TWOYEAR:    daily,
-	YEAR:       daily,
-	SIXMONTH:   daily,
-	THREEMONTH: daily,
-	MONTH:      daily,
-	WEEK:       fifteenminute,
-	DAY:        fiveminute,
+var gdaxIntervalToGranularity = map[string]int64{
+	TWOYEAR:    dailyBySeconds,
+	YEAR:       dailyBySeconds,
+	SIXMONTH:   dailyBySeconds,
+	THREEMONTH: dailyBySeconds,
+	MONTH:      dailyBySeconds,
+	WEEK:       fifteenminuteBySeconds,
+	DAY:        fiveminuteBySeconds,
 }
 
-// GDAX API granularities
+// GDAX API granularities, with the second being the atomic element
 const (
-	daily         = 86400
-	sixhour       = 21600
-	hour          = 3600
-	fifteenminute = 900
-	fiveminute    = 300
-	minute        = 60
+	dailyBySeconds         = 86400
+	sixhourBySeconds       = 21600
+	hourBySeconds          = 3600
+	fifteenminuteBySeconds = 900
+	fiveminuteBySeconds    = 300
+	minuteBySeconds        = 60
 )
 
-const historicalEndpoint = "https://api.gdax.com/products/BTC-USD/candles"
+const gdaxHistoricalEndpoint = "https://api.gdax.com/products/BTC-USD/candles"
 
 // Given an interval, check its validity and attempt to return all GDAX BTC data within that interval, with a
 // pre-determined granularity
 func PollGdaxHistorical(interval string) ([]PricePoint, *errorhandling.MyError) {
 	interval = strings.ToUpper(interval)
-	if intervalToGranularity[string(interval)] == 0 {
+	if gdaxIntervalToGranularity[string(interval)] == 0 {
 		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: 400}
 	}
 
-	buckets, myerror := fetchBuckets(interval)
+	buckets, myerror := fetchGdaxBuckets(interval)
 
 	if myerror != nil {
 		return nil, myerror
@@ -59,7 +60,8 @@ func generalizeGdaxBuckets(buckets [][]float64) []PricePoint {
 	pricePoints := make([]PricePoint, len(buckets))
 
 	for index, val := range buckets {
-		pricePoints[index] = PricePoint{int64(val[0]), val[1]}
+		price := strconv.FormatFloat(val[1], 'f', -1, 64)
+		pricePoints[index] = PricePoint{int64(val[0]), price}
 	}
 
 	return pricePoints
@@ -69,13 +71,13 @@ func generalizeGdaxBuckets(buckets [][]float64) []PricePoint {
 //
 // Some time intervals, such as 2 years and 1 year, require multiple requests to GDAX,
 // which is why we treat the intervalPartition as a slice of an arbitrary number of timePeriods/requests to make
-func fetchBuckets(interval string) ([][]float64, *errorhandling.MyError) {
+func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 	intervalPartition := getIntervalPartition(interval)
-	granularity := intervalToGranularity[interval]
+	granularity := gdaxIntervalToGranularity[interval]
 
 	buckets := make([][]float64, 0)
 	for _, timePeriod := range intervalPartition {
-		requestString, err := buildRequest(granularity, timePeriod.start, timePeriod.end)
+		requestString, err := buildGdaxRequest(granularity, timePeriod.start, timePeriod.end)
 
 		if err != nil {
 			return nil, &errorhandling.MyError{Err: err.Error()}
@@ -112,10 +114,10 @@ func fetchBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 	return buckets, nil
 }
 
-// Given a granularity and start and end times, buildRequest returns the formatted GET request URL for the GDAX API
+// Given a granularity and start and end times, buildGdaxRequest returns the formatted GET request URL for the GDAX API
 // Ex: https://api.gdax.com/products/BTC-USD/candles?start=2017-01-15&end=2017-01-16&granularity=3600
-func buildRequest(granularity int, start time.Time, end time.Time) (string, error) {
-	req, err := http.NewRequest("GET", historicalEndpoint, nil)
+func buildGdaxRequest(granularity int64, start time.Time, end time.Time) (string, error) {
+	req, err := http.NewRequest("GET", gdaxHistoricalEndpoint, nil)
 	if err != nil {
 		log.Println("Could not build GDAX historical URL")
 		return "", err
@@ -124,7 +126,7 @@ func buildRequest(granularity int, start time.Time, end time.Time) (string, erro
 	// Build the GET request
 	q := req.URL.Query()
 
-	q.Add("granularity", fmt.Sprintf("%d", granularity))
+	q.Add("granularity", strconv.FormatInt(granularity, 10))
 
 	q.Add("start", start.Format("2006-01-02"))
 	q.Add("end", end.Format("2006-01-02"))
@@ -136,35 +138,35 @@ func buildRequest(granularity int, start time.Time, end time.Time) (string, erro
 // Given an interval, return a slice partition of that interval into timePeriods in reverse chronological order
 // to preserve order when making consecutive requests to GDAX
 func getIntervalPartition(interval string) []timePeriod {
-	now := time.Now()
-	now = now.AddDate(0, 0, 1)
+	nowRounded := roundTime(time.Now())
+	nowRounded = nowRounded.AddDate(0, 0, 1)
 	intervalPartition := make([]timePeriod, 0)
 
 	switch interval {
 	case TWOYEAR:
-		twoYearsAgo := now.AddDate(-2, 0, 0)
-		for timeIndex := now.AddDate(0, -6, 0); timeIndex.After(twoYearsAgo) || timeIndex.Equal(twoYearsAgo); timeIndex = timeIndex.AddDate(0, -6, 0) {
+		twoYearsAgo := nowRounded.AddDate(-2, 0, 0)
+		for timeIndex := nowRounded.AddDate(0, -6, 0); timeIndex.After(twoYearsAgo) || timeIndex.Equal(twoYearsAgo); timeIndex = timeIndex.AddDate(0, -6, 0) {
 			intervalPartition = append(intervalPartition, timePeriod{timeIndex, timeIndex.AddDate(0, 6, 0)})
 		}
 	case YEAR:
-		oneYearAgo := now.AddDate(-1, 0, 0)
-		for timeIndex := now.AddDate(0, -6, 0); timeIndex.After(oneYearAgo) || timeIndex.Equal(oneYearAgo); timeIndex = timeIndex.AddDate(0, -6, 0) {
+		oneYearAgo := nowRounded.AddDate(-1, 0, 0)
+		for timeIndex := nowRounded.AddDate(0, -6, 0); timeIndex.After(oneYearAgo) || timeIndex.Equal(oneYearAgo); timeIndex = timeIndex.AddDate(0, -6, 0) {
 			intervalPartition = append(intervalPartition, timePeriod{timeIndex, timeIndex.AddDate(0, 6, 0)})
 		}
 	case SIXMONTH:
-		intervalPartition = []timePeriod{{now.AddDate(0, -6, 0), now}}
+		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -6, 0), nowRounded}}
 	case THREEMONTH:
-		intervalPartition = []timePeriod{{now.AddDate(0, -3, 0), now}}
+		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -3, 0), nowRounded}}
 	case MONTH:
-		intervalPartition = []timePeriod{{now.AddDate(0, -1, 0), now}}
+		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -1, 0), nowRounded}}
 	case WEEK:
-		first := now.AddDate(0, 0, -8)
+		first := nowRounded.AddDate(0, 0, -8)
 		second := first.AddDate(0, 0, 3)
 		third := second.AddDate(0, 0, 3)
 		fourth := third.AddDate(0, 0, 2)
 		intervalPartition = []timePeriod{{third, fourth}, {second, third}, {first, second}}
 	case DAY:
-		intervalPartition = []timePeriod{{now.AddDate(0, 0, -1), now}}
+		intervalPartition = []timePeriod{{nowRounded.AddDate(0, 0, -1), nowRounded}}
 	}
 
 	return intervalPartition

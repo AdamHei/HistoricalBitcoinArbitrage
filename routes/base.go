@@ -6,8 +6,6 @@ import (
 	"net/http"
 )
 
-const GET = "GET"
-
 type route struct {
 	Name, Method, Path string
 	HandlerFunc        http.HandlerFunc
@@ -16,16 +14,22 @@ type route struct {
 func getRoutes(appContext *handlers.AppContext) []route {
 	return []route{
 		{
-			Method:      GET,
+			Method:      http.MethodGet,
 			Path:        "/historical/gemini",
 			Name:        "Gemini Historical",
 			HandlerFunc: appContext.GeminiHistorical,
 		},
 		{
-			Method:      GET,
+			Method:      http.MethodGet,
 			Path:        "/historical/gdax/{interval}",
 			Name:        "GDAX Historical",
 			HandlerFunc: appContext.GdaxHistorical,
+		},
+		{
+			Method:      http.MethodGet ,
+			Path:        "/historical/kraken/{interval}",
+			Name:        "Kraken Historical",
+			HandlerFunc: appContext.KrakenHistorical,
 		},
 	}
 }

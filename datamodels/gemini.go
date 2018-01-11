@@ -41,32 +41,32 @@ func QueryGeminiHistorical(db *mgo.Database, interval Interval) ([]models.Gemini
 
 // Return the time in milliseconds that is one "interval" from now
 func getStartTimeMs(interval Interval) int64 {
-	timestamp := time.Now()
+	startTime := roundTime(time.Now())
 
 	switch interval {
 	case TWOYEAR:
-		timestamp = timestamp.AddDate(-2, 0, 0)
+		startTime = startTime.AddDate(-2, 0, 0)
 	case YEAR:
-		timestamp = timestamp.AddDate(-1, 0, 0)
+		startTime = startTime.AddDate(-1, 0, 0)
 	case SIXMONTH:
-		timestamp = timestamp.AddDate(0, -6, 0)
+		startTime = startTime.AddDate(0, -6, 0)
 	case THREEMONTH:
-		timestamp = timestamp.AddDate(0, -3, 0)
+		startTime = startTime.AddDate(0, -3, 0)
 	case MONTH:
-		timestamp = timestamp.AddDate(0, -1, 0)
+		startTime = startTime.AddDate(0, -1, 0)
 	case WEEK:
-		timestamp = timestamp.AddDate(0, 0, -4)
+		startTime = startTime.AddDate(0, 0, -4)
 	case DAY:
-		timestamp = timestamp.AddDate(0, 0, -1)
+		startTime = startTime.AddDate(0, 0, -1)
 	case TWELVEHOUR:
-		timestamp = timestamp.Add(-12 * time.Hour)
+		startTime = startTime.Add(-12 * time.Hour)
 	case SIXHOUR:
-		timestamp = timestamp.Add(-6 * time.Hour)
+		startTime = startTime.Add(-6 * time.Hour)
 	case HOUR:
-		timestamp = timestamp.Add(-1 * time.Hour)
+		startTime = startTime.Add(-1 * time.Hour)
 	case THIRTYMINUTE:
-		timestamp = timestamp.Add(-30 * time.Minute)
+		startTime = startTime.Add(-30 * time.Minute)
 	}
 
-	return timestamp.Unix() * 1000
+	return startTime.Unix() * 1000
 }
