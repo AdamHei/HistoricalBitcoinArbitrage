@@ -2,7 +2,7 @@ package datamodels
 
 import "time"
 
-// Intervals
+// Accepted Intervals
 const (
 	TWOYEAR      = "TWOYEAR"
 	YEAR         = "YEAR"
@@ -17,6 +17,11 @@ const (
 	THIRTYMINUTE = "THIRTYMINUTE"
 )
 
+const EMPTYSTRING = ""
+
+const quandlEndpoint = "https://www.quandl.com/api/%s/datasets/%s/%s.json"
+
+// The uniform data structure returned to the client independent of exchange
 type PricePoint struct {
 	Timestamp int64  `json:"timestamp"`
 	Price     string `json:"price"`

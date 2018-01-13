@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+const INTERVAL = "interval"
+
 type AppContext struct {
 	Db *mgo.Database
 }

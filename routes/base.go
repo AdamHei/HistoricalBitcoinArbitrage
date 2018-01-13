@@ -31,6 +31,12 @@ func getRoutes(appContext *handlers.AppContext) []route {
 			Name:        "Kraken Historical",
 			HandlerFunc: appContext.KrakenHistorical,
 		},
+		{
+			Method: http.MethodGet,
+			Path: "/historical/bitfinex/{interval}",
+			Name: "Bitfinex Historical",
+			HandlerFunc: appContext.BitfinexHistorical,
+		},
 	}
 }
 

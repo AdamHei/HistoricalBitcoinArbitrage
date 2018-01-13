@@ -10,10 +10,8 @@ import (
 	"time"
 )
 
-type Interval string
-
 // TODO Return array of PricePoints
-func QueryGeminiHistorical(db *mgo.Database, interval Interval) ([]models.GeminiOrder, *errorhandling.MyError) {
+func QueryGeminiHistorical(db *mgo.Database, interval string) ([]models.GeminiOrder, *errorhandling.MyError) {
 	coll := db.C(models.GeminiCollection)
 
 	startTimeMs := getStartTimeMs(interval)
@@ -40,7 +38,7 @@ func QueryGeminiHistorical(db *mgo.Database, interval Interval) ([]models.Gemini
 }
 
 // Return the time in milliseconds that is one "interval" from now
-func getStartTimeMs(interval Interval) int64 {
+func getStartTimeMs(interval string) int64 {
 	startTime := roundTime(time.Now())
 
 	switch interval {

@@ -50,13 +50,16 @@ var krakenIntervalToGranularity = map[string]int64{
 	DAY:        fiveMinutes,
 }
 
-const krakenHistoricalEndpoint = "https://api.kraken.com/0/public/OHLC"
+const krakenApiVersion = "0"
+const krakenEndpoint = "https://api.kraken.com/%s/public/OHLC"
+
+var krakenHistoricalEndpoint = fmt.Sprintf(krakenEndpoint, krakenApiVersion)
 
 // Given an interval, check its validity and return all Kraken BTC data within that interval, by a pre-determined granularity
 func PollKrakenHistorical(interval string) ([]PricePoint, *errorhandling.MyError) {
 	interval = strings.ToUpper(interval)
 	if krakenIntervalToGranularity[string(interval)] == 0 {
-		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: 400}
+		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
 	}
 
 	resultMap, err := fetchKrakenResponse(interval)
@@ -75,7 +78,7 @@ func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errorhandli
 	for index, val := range buckets {
 		bucket := new(KrakenBucket)
 
-		err := unmarshalBucket(val, bucket)
+		err := unmarshalKrakenBucket(val, bucket)
 
 		if err != nil {
 			return nil, &errorhandling.MyError{Err: err.Error()}
@@ -88,7 +91,9 @@ func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errorhandli
 
 // Since Kraken decided to return an array of strings and integers, we need to parse it by hand
 // For now, just parsing timestamp and open price
-func unmarshalBucket(jsonBucket []json.RawMessage, bucket *KrakenBucket) error {
+//
+// TODO: Add more fields as necessary
+func unmarshalKrakenBucket(jsonBucket []json.RawMessage, bucket *KrakenBucket) error {
 	err := json.Unmarshal(jsonBucket[0], &bucket.Timestamp)
 	if err != nil {
 		return err
@@ -139,7 +144,7 @@ func fetchKrakenResponse(interval string) (*KrakenResultMap, *errorhandling.MyEr
 		json.NewDecoder(response.Body).Decode(&resp)
 		log.Println(resp)
 		log.Println(fmt.Sprintf("Either the Kraken API is down or the request was incorrect with response code %d", response.StatusCode))
-		return nil, &errorhandling.MyError{Err: "Kraken API error", ErrorCode: 500}
+		return nil, &errorhandling.MyError{Err: "Kraken API error", ErrorCode: http.StatusInternalServerError}
 	}
 }
 
@@ -148,7 +153,7 @@ func buildKrakenRequest(interval string) (string, error) {
 	request, err := http.NewRequest("GET", krakenHistoricalEndpoint, nil)
 	if err != nil {
 		log.Println("Could not build Kraken historical URL")
-		return "", err
+		return EMPTYSTRING, err
 	}
 
 	query := request.URL.Query()

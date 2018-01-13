@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-func (appContext *AppContext) KrakenHistorical(responseWriter http.ResponseWriter, request *http.Request) {
+func (appcontext *AppContext) BitfinexHistorical(responseWriter http.ResponseWriter, request *http.Request) {
 	args := mux.Vars(request)
 	interval := args[INTERVAL]
 
-	pricePoints, err := datamodels.PollKrakenHistorical(interval)
+	pricePoints, err := datamodels.PollBitfinexHistorical(interval)
 
 	if err != nil {
 		respond(responseWriter, nil, err)
