@@ -18,6 +18,7 @@ const (
 )
 
 const EMPTYSTRING = ""
+const DATELAYOUTSTRING = "2006-01-02"
 
 const quandlEndpoint = "https://www.quandl.com/api/%s/datasets/%s/%s.json"
 

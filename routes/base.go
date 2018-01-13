@@ -26,16 +26,22 @@ func getRoutes(appContext *handlers.AppContext) []route {
 			HandlerFunc: appContext.GdaxHistorical,
 		},
 		{
-			Method:      http.MethodGet ,
+			Method:      http.MethodGet,
 			Path:        "/historical/kraken/{interval}",
 			Name:        "Kraken Historical",
 			HandlerFunc: appContext.KrakenHistorical,
 		},
 		{
-			Method: http.MethodGet,
-			Path: "/historical/bitfinex/{interval}",
-			Name: "Bitfinex Historical",
+			Method:      http.MethodGet,
+			Path:        "/historical/bitfinex/{interval}",
+			Name:        "Bitfinex Historical",
 			HandlerFunc: appContext.BitfinexHistorical,
+		},
+		{
+			Method:      http.MethodGet,
+			Path:        "/historical/index/{interval}",
+			Name:        "Index Price (from CoinDesk)",
+			HandlerFunc: appContext.CoinDeskHistorical,
 		},
 	}
 }

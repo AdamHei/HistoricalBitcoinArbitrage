@@ -119,6 +119,8 @@ func fetchKrakenResponse(interval string) (*KrakenResultMap, *errorhandling.MyEr
 	}
 
 	response, err := http.Get(requestString)
+	defer response.Body.Close()
+
 	log.Println(fmt.Sprintf("Queryed %s", requestString))
 
 	if err != nil {

@@ -87,11 +87,13 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 
 		if err != nil {
 			log.Println("Could not reach ", requestString)
+			response.Body.Close()
 			return nil, &errorhandling.MyError{Err: "Failed to reach GDAX API", ErrorCode: http.StatusInternalServerError}
 		}
 		if response.StatusCode == http.StatusOK {
 			tempBuckets := make([][]float64, 0)
 			err = json.NewDecoder(response.Body).Decode(&tempBuckets)
+			response.Body.Close()
 
 			if err != nil {
 				log.Println("Could not decode GDAX response")
@@ -102,6 +104,7 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 			errResp := new(models.GdaxError)
 			err = json.NewDecoder(response.Body).Decode(errResp)
 
+			response.Body.Close()
 			if err != nil {
 				log.Println("Could not decode GDAX error response with code ", response.StatusCode)
 				return nil, &errorhandling.MyError{Err: err.Error()}

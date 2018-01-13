@@ -146,6 +146,8 @@ func fetchQuandlResponse(interval string) (*QuandlResponse, *errorhandling.MyErr
 	}
 
 	response, err := http.Get(requestString)
+	defer response.Body.Close()
+
 	log.Println(fmt.Sprintf("Querying %s", requestString))
 
 	if err != nil {
@@ -185,7 +187,7 @@ func buildQuandlRequest(interval string) (string, error) {
 	return request.URL.String(), nil
 }
 
-// Determine the start date for the Quandl response
+// Similar to CoinDesk, determine the start date for the Quandl response
 func getQuandlStartDate(interval string) string {
 	startTime := time.Now()
 
