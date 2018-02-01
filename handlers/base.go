@@ -14,6 +14,10 @@ type AppContext struct {
 	Db *mgo.Database
 }
 
+func (appcontext *AppContext) Index(responseWriter http.ResponseWriter, request *http.Request) {
+	respond(responseWriter, "Welcome to the Bitcoin Historical Data API", nil)
+}
+
 func respond(writer http.ResponseWriter, data interface{}, err *errorhandling.MyError) {
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 

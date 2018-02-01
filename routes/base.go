@@ -15,6 +15,12 @@ func getRoutes(appContext *handlers.AppContext) []route {
 	return []route{
 		{
 			Method:      http.MethodGet,
+			Path:        "/",
+			Name:        "Index page",
+			HandlerFunc: appContext.Index,
+		},
+		{
+			Method:      http.MethodGet,
 			Path:        "/historical/gemini",
 			Name:        "Gemini Historical",
 			HandlerFunc: appContext.GeminiHistorical,
