@@ -37,7 +37,6 @@ const coinDeskEndpoint = "https://api.coindesk.com/%s/bpi/historical/open.json"
 
 var coinDeskHistoricalEndpoint = fmt.Sprintf(coinDeskEndpoint, coinDeskApiVersion)
 
-
 // Given an interval, check its validity and return all CoinDesk Bitcoin Price Index data within that interval, as PricePoints
 // Currently, we only support 1 month as the shortest lookback period, since the finest granularity of data is 1 day
 //

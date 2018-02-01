@@ -31,5 +31,5 @@ func main() {
 	appContext := &handlers.AppContext{Db: db}
 	router := routes.NewRouter(appContext)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":80", router))
 }
