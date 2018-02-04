@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/adamhei/historicalapi/errorhandling"
-	"github.com/adamhei/historicaldata/models"
+	"github.com/adamhei/historicaldata/trademodels"
 	"log"
 	"net/http"
 	"strconv"
@@ -101,7 +101,7 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 			}
 			buckets = append(buckets, tempBuckets...)
 		} else {
-			errResp := new(models.GdaxError)
+			errResp := new(trademodels.GdaxError)
 			err = json.NewDecoder(response.Body).Decode(errResp)
 
 			response.Body.Close()

@@ -3,7 +3,7 @@ package datamodels
 import (
 	"fmt"
 	"github.com/adamhei/historicalapi/errorhandling"
-	"github.com/adamhei/historicaldata/models"
+	"github.com/adamhei/historicaldata/trademodels"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
@@ -11,8 +11,8 @@ import (
 )
 
 // TODO Return array of PricePoints
-func QueryGeminiHistorical(db *mgo.Database, interval string) ([]models.GeminiOrder, *errorhandling.MyError) {
-	coll := db.C(models.GeminiCollection)
+func QueryGeminiHistorical(db *mgo.Database, interval string) ([]trademodels.GeminiOrder, *errorhandling.MyError) {
+	coll := db.C(trademodels.GeminiCollection)
 
 	startTimeMs := getStartTimeMs(interval)
 
@@ -27,7 +27,7 @@ func QueryGeminiHistorical(db *mgo.Database, interval string) ([]models.GeminiOr
 	}
 	log.Println(fmt.Sprintf("Found %d trades", count))
 
-	results := make([]models.GeminiOrder, 0)
+	results := make([]trademodels.GeminiOrder, 0)
 	err = query.All(&results)
 
 	if err != nil {

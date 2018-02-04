@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/adamhei/historicalapi/handlers"
 	"github.com/adamhei/historicalapi/routes"
-	"github.com/adamhei/historicaldata/models"
+	"github.com/adamhei/historicaldata/trademodels"
 	"gopkg.in/mgo.v2"
 	"log"
 	"net/http"
@@ -12,11 +12,11 @@ import (
 
 func main() {
 	mgoDialInfo := &mgo.DialInfo{
-		Addrs:    []string{models.DbUrl},
+		Addrs:    []string{trademodels.DbUrl},
 		Timeout:  1 * time.Hour,
-		Database: models.AUTHDB,
-		Username: models.USERNAME,
-		Password: models.PASSWORD,
+		Database: trademodels.AUTHDB,
+		Username: trademodels.USERNAME,
+		Password: trademodels.PASSWORD,
 	}
 	sesh, err := mgo.DialWithInfo(mgoDialInfo)
 	defer sesh.Close()
@@ -26,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	db := sesh.DB(models.DbName)
+	db := sesh.DB(trademodels.DbName)
 
 	appContext := &handlers.AppContext{Db: db}
 	router := routes.NewRouter(appContext)
