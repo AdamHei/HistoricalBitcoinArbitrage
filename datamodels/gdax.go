@@ -162,7 +162,14 @@ func getIntervalPartition(interval string) []timePeriod {
 	case THREEMONTH:
 		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -3, 0), nowRounded}}
 	case MONTH:
-		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -1, 0), nowRounded}}
+		// Offset by one day to avoid overload of datapoints
+		// From the GDAX API:
+		// "If data points are readily available,
+		// your response may contain as many as 350 candles
+		// and some of those candles may precede your declared start value."
+		intervalPartition = []timePeriod{{
+			nowRounded.AddDate(0, -1, 0).AddDate(0, 0, 1),
+			nowRounded}}
 	case WEEK:
 		first := nowRounded.AddDate(0, 0, -8)
 		second := first.AddDate(0, 0, 3)
