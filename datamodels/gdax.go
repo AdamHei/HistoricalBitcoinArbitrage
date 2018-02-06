@@ -84,6 +84,7 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 		}
 
 		response, err := http.Get(requestString)
+		log.Println(fmt.Sprintf("Querying %s", requestString))
 
 		if err != nil {
 			log.Println("Could not reach ", requestString)
