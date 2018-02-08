@@ -22,9 +22,9 @@ var gdaxIntervalToGranularity = map[string]int64{
 	YEAR:       dailyBySeconds,
 	SIXMONTH:   dailyBySeconds,
 	THREEMONTH: dailyBySeconds,
-	MONTH:      dailyBySeconds,
-	WEEK:       fifteenminuteBySeconds,
-	DAY:        fiveminuteBySeconds,
+	MONTH:      sixhourBySeconds,
+	WEEK:       hourBySeconds,
+	DAY:        fifteenminuteBySeconds,
 }
 
 // GDAX API granularities, with the second being the atomic element
@@ -52,6 +52,9 @@ func PollGdaxHistorical(interval string) ([]PricePoint, *errorhandling.MyError) 
 	if myerror != nil {
 		return nil, myerror
 	}
+
+	log.Println(fmt.Sprintf("Found %d buckets from GDAX", len(buckets)))
+
 	return generalizeGdaxBuckets(buckets), nil
 }
 
@@ -100,6 +103,10 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 				log.Println("Could not decode GDAX response")
 				return nil, &errorhandling.MyError{Err: err.Error(), ErrorCode: http.StatusInternalServerError}
 			}
+
+			// Filter out extra data
+			tempBuckets = filterBuckets(timePeriod.start, timePeriod.end, tempBuckets)
+
 			buckets = append(buckets, tempBuckets...)
 		} else {
 			errResp := new(trademodels.GdaxError)
@@ -116,6 +123,22 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 	}
 
 	return buckets, nil
+}
+
+// We want to send only those price data which are within the time interval the user requested
+// Unfortunately, GDAX is lazy and gives us too much data sometimes
+// See: https://docs.gdax.com/#get-historic-rates
+func filterBuckets(start time.Time, end time.Time, buckets [][]float64) [][]float64 {
+	filtered := make([][]float64, 0)
+
+	for _, bucket := range buckets {
+		timestamp := time.Unix(int64(bucket[0]), 0)
+		if timestamp.Before(end) && timestamp.After(start) || timestamp.Equal(start) || timestamp.Equal(end) {
+			filtered = append(filtered, bucket)
+		}
+	}
+
+	return filtered
 }
 
 // Given a granularity and start and end times, buildGdaxRequest returns the formatted GET request URL for the GDAX API
@@ -144,8 +167,8 @@ func buildGdaxRequest(granularity int64, start time.Time, end time.Time) (string
 func getIntervalPartition(interval string) []timePeriod {
 	nowRounded := roundTime(time.Now())
 	nowRounded = nowRounded.AddDate(0, 0, 1)
-	intervalPartition := make([]timePeriod, 0)
 
+	intervalPartition := make([]timePeriod, 0)
 	switch interval {
 	case TWOYEAR:
 		twoYearsAgo := nowRounded.AddDate(-2, 0, 0)
@@ -162,14 +185,7 @@ func getIntervalPartition(interval string) []timePeriod {
 	case THREEMONTH:
 		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -3, 0), nowRounded}}
 	case MONTH:
-		// Offset by one day to avoid overload of datapoints
-		// From the GDAX API:
-		// "If data points are readily available,
-		// your response may contain as many as 350 candles
-		// and some of those candles may precede your declared start value."
-		intervalPartition = []timePeriod{{
-			nowRounded.AddDate(0, -1, 0).AddDate(0, 0, 1),
-			nowRounded}}
+		intervalPartition = []timePeriod{{nowRounded.AddDate(0, -1, 0), nowRounded}}
 	case WEEK:
 		first := nowRounded.AddDate(0, 0, -8)
 		second := first.AddDate(0, 0, 3)
@@ -177,7 +193,7 @@ func getIntervalPartition(interval string) []timePeriod {
 		fourth := third.AddDate(0, 0, 2)
 		intervalPartition = []timePeriod{{third, fourth}, {second, third}, {first, second}}
 	case DAY:
-		intervalPartition = []timePeriod{{nowRounded.AddDate(0, 0, -1), nowRounded}}
+		intervalPartition = []timePeriod{{nowRounded.AddDate(0, 0, -2), nowRounded}}
 	}
 
 	return intervalPartition
