@@ -3,7 +3,7 @@ package datamodels
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/adamhei/historicalapi/errorhandling"
+	"github.com/adamhei/historicalapi/errors"
 	"log"
 	"net/http"
 	"sort"
@@ -41,10 +41,10 @@ var coinDeskHistoricalEndpoint = fmt.Sprintf(coinDeskEndpoint, coinDeskApiVersio
 // Currently, we only support 1 month as the shortest lookback period, since the finest granularity of data is 1 day
 //
 // TODO: Add support for shorter, finer lookbacks (coinmarketcap?)
-func PollCoinDeskHistorical(interval string) ([]PricePoint, *errorhandling.MyError) {
+func PollCoinDeskHistorical(interval string) ([]PricePoint, *errors.MyError) {
 	interval = strings.ToUpper(interval)
 	if !coinDeskIntervals[interval] {
-		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
+		return nil, &errors.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
 	}
 
 	coinDeskResponse, err := fetchCoinDeskResponse(interval)
@@ -57,7 +57,7 @@ func PollCoinDeskHistorical(interval string) ([]PricePoint, *errorhandling.MyErr
 }
 
 // Given the 2D date -> price response from CoinDesk, convert the data to PricePoints
-func parseCoinDeskBuckets(buckets map[string]float64) ([]PricePoint, *errorhandling.MyError) {
+func parseCoinDeskBuckets(buckets map[string]float64) ([]PricePoint, *errors.MyError) {
 	pricePoints := make([]PricePoint, len(buckets))
 
 	index := 0
@@ -66,7 +66,7 @@ func parseCoinDeskBuckets(buckets map[string]float64) ([]PricePoint, *errorhandl
 
 		if err != nil {
 			log.Println("Could not parse CoinDesk date")
-			return nil, &errorhandling.MyError{Err: "Could not properly parse CoinDesk response", ErrorCode: http.StatusInternalServerError}
+			return nil, &errors.MyError{Err: "Could not properly parse CoinDesk response", ErrorCode: http.StatusInternalServerError}
 		}
 
 		priceString := strconv.FormatFloat(price, 'f', -1, 64)
@@ -87,10 +87,10 @@ func parseCoinDeskBuckets(buckets map[string]float64) ([]PricePoint, *errorhandl
 // 1. Build the GET request
 // 2. Fetch the historical index data from CoinDesk
 // 3. Return the response if successful, error if not
-func fetchCoinDeskResponse(interval string) (*CoinDeskResponse, *errorhandling.MyError) {
+func fetchCoinDeskResponse(interval string) (*CoinDeskResponse, *errors.MyError) {
 	requestString, err := buildCoinDeskRequest(interval)
 	if err != nil {
-		return nil, &errorhandling.MyError{Err: err.Error()}
+		return nil, &errors.MyError{Err: err.Error()}
 	}
 
 	response, err := http.Get(requestString)
@@ -100,7 +100,7 @@ func fetchCoinDeskResponse(interval string) (*CoinDeskResponse, *errorhandling.M
 
 	if err != nil {
 		log.Println(fmt.Sprintf("Could not reach %s", requestString))
-		return nil, &errorhandling.MyError{Err: err.Error()}
+		return nil, &errors.MyError{Err: err.Error()}
 	}
 
 	if response.StatusCode == http.StatusOK {
@@ -109,12 +109,12 @@ func fetchCoinDeskResponse(interval string) (*CoinDeskResponse, *errorhandling.M
 
 		if err != nil {
 			log.Println("Could not decode CoinDesk response")
-			return nil, &errorhandling.MyError{Err: err.Error()}
+			return nil, &errors.MyError{Err: err.Error()}
 		}
 		return coinDeskResponse, nil
 	} else {
 		log.Println(fmt.Sprintf("There was an error contacting Coin Desk with response code %d", response.StatusCode))
-		return nil, &errorhandling.MyError{Err: "Coin Desk API error", ErrorCode: http.StatusInternalServerError}
+		return nil, &errors.MyError{Err: "Coin Desk API error", ErrorCode: http.StatusInternalServerError}
 	}
 }
 

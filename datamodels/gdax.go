@@ -3,7 +3,7 @@ package datamodels
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/adamhei/historicalapi/errorhandling"
+	"github.com/adamhei/historicalapi/errors"
 	"github.com/adamhei/historicaldata/trademodels"
 	"log"
 	"net/http"
@@ -41,10 +41,10 @@ const gdaxHistoricalEndpoint = "https://api.gdax.com/products/BTC-USD/candles"
 
 // Given an interval, check its validity and attempt to return all GDAX BTC data within that interval, with a
 // pre-determined granularity
-func PollGdaxHistorical(interval string) ([]PricePoint, *errorhandling.MyError) {
+func PollGdaxHistorical(interval string) ([]PricePoint, *errors.MyError) {
 	interval = strings.ToUpper(interval)
 	if gdaxIntervalToGranularity[string(interval)] == 0 {
-		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: 400}
+		return nil, &errors.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: 400}
 	}
 
 	buckets, myerror := fetchGdaxBuckets(interval)
@@ -74,7 +74,7 @@ func generalizeGdaxBuckets(buckets [][]float64) []PricePoint {
 //
 // Some time intervals, such as 2 years and 1 year, require multiple requests to GDAX,
 // which is why we treat the intervalPartition as a slice of an arbitrary number of timePeriods/requests to make
-func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
+func fetchGdaxBuckets(interval string) ([][]float64, *errors.MyError) {
 	intervalPartition := getIntervalPartition(interval)
 	granularity := gdaxIntervalToGranularity[interval]
 
@@ -83,7 +83,7 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 		requestString, err := buildGdaxRequest(granularity, timePeriod.start, timePeriod.end)
 
 		if err != nil {
-			return nil, &errorhandling.MyError{Err: err.Error()}
+			return nil, &errors.MyError{Err: err.Error()}
 		}
 
 		response, err := http.Get(requestString)
@@ -92,7 +92,7 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 		if err != nil {
 			log.Println("Could not reach ", requestString)
 			response.Body.Close()
-			return nil, &errorhandling.MyError{Err: "Failed to reach GDAX API", ErrorCode: http.StatusInternalServerError}
+			return nil, &errors.MyError{Err: "Failed to reach GDAX API", ErrorCode: http.StatusInternalServerError}
 		}
 		if response.StatusCode == http.StatusOK {
 			tempBuckets := make([][]float64, 0)
@@ -101,7 +101,7 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 
 			if err != nil {
 				log.Println("Could not decode GDAX response")
-				return nil, &errorhandling.MyError{Err: err.Error(), ErrorCode: http.StatusInternalServerError}
+				return nil, &errors.MyError{Err: err.Error(), ErrorCode: http.StatusInternalServerError}
 			}
 
 			// Filter out extra data
@@ -115,9 +115,9 @@ func fetchGdaxBuckets(interval string) ([][]float64, *errorhandling.MyError) {
 			response.Body.Close()
 			if err != nil {
 				log.Println("Could not decode GDAX error response with code ", response.StatusCode)
-				return nil, &errorhandling.MyError{Err: err.Error()}
+				return nil, &errors.MyError{Err: err.Error()}
 			} else {
-				return nil, &errorhandling.MyError{Err: errResp.Message}
+				return nil, &errors.MyError{Err: errResp.Message}
 			}
 		}
 	}

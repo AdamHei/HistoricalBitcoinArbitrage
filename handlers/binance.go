@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-func (appContext *AppContext) GdaxHistorical(responseWriter http.ResponseWriter, req *http.Request) {
+func (appContext *AppContext) BinanceHistorical(responseWriter http.ResponseWriter, req *http.Request) {
 	args := mux.Vars(req)
 	interval := args[INTERVAL]
 
-	pricePoints, err := datamodels.PollGdaxHistorical(interval)
+	pricePoints, err := datamodels.PollBinanceHistorical(interval)
 
 	if err != nil {
 		respond(responseWriter, nil, err)

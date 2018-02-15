@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/adamhei/historicalapi/errorhandling"
+	"github.com/adamhei/historicalapi/errors"
 	"gopkg.in/mgo.v2"
 	"log"
 	"net/http"
@@ -18,7 +18,7 @@ func (appcontext *AppContext) Index(responseWriter http.ResponseWriter, request 
 	respond(responseWriter, "Welcome to the Bitcoin Historical Data API", nil)
 }
 
-func respond(writer http.ResponseWriter, data interface{}, err *errorhandling.MyError) {
+func respond(writer http.ResponseWriter, data interface{}, err *errors.MyError) {
 	writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	if err != nil {

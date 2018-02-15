@@ -3,7 +3,7 @@ package datamodels
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/adamhei/historicalapi/errorhandling"
+	"github.com/adamhei/historicalapi/errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -56,10 +56,10 @@ const krakenEndpoint = "https://api.kraken.com/%s/public/OHLC"
 var krakenHistoricalEndpoint = fmt.Sprintf(krakenEndpoint, krakenApiVersion)
 
 // Given an interval, check its validity and return all Kraken BTC data within that interval, by a pre-determined granularity
-func PollKrakenHistorical(interval string) ([]PricePoint, *errorhandling.MyError) {
+func PollKrakenHistorical(interval string) ([]PricePoint, *errors.MyError) {
 	interval = strings.ToUpper(interval)
 	if krakenIntervalToGranularity[string(interval)] == 0 {
-		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
+		return nil, &errors.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
 	}
 
 	resultMap, err := fetchKrakenResponse(interval)
@@ -72,7 +72,7 @@ func PollKrakenHistorical(interval string) ([]PricePoint, *errorhandling.MyError
 }
 
 // Given the Kraken 2D-price data array, convert it to an array of the universal PricePoint data structure
-func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errorhandling.MyError) {
+func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errors.MyError) {
 	pricePoints := make([]PricePoint, len(buckets))
 
 	for index, val := range buckets {
@@ -81,7 +81,7 @@ func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errorhandli
 		err := unmarshalKrakenBucket(val, bucket)
 
 		if err != nil {
-			return nil, &errorhandling.MyError{Err: err.Error()}
+			return nil, &errors.MyError{Err: err.Error()}
 		}
 
 		pricePoints[index] = PricePoint{bucket.Timestamp, bucket.Open}
@@ -110,12 +110,12 @@ func unmarshalKrakenBucket(jsonBucket []json.RawMessage, bucket *KrakenBucket) e
 // 1. Construct the GET request
 // 2. Fetch the historical data from Kraken
 // 3. Return KrakenResultMap if successful, error else
-func fetchKrakenResponse(interval string) (*KrakenResultMap, *errorhandling.MyError) {
+func fetchKrakenResponse(interval string) (*KrakenResultMap, *errors.MyError) {
 	requestString, err := buildKrakenRequest(interval)
 
 	if err != nil {
 		log.Println("Could build Kraken request string")
-		return nil, &errorhandling.MyError{Err: err.Error()}
+		return nil, &errors.MyError{Err: err.Error()}
 	}
 
 	response, err := http.Get(requestString)
@@ -125,7 +125,7 @@ func fetchKrakenResponse(interval string) (*KrakenResultMap, *errorhandling.MyEr
 
 	if err != nil {
 		log.Println("Could not reach ", requestString)
-		return nil, &errorhandling.MyError{Err: err.Error()}
+		return nil, &errors.MyError{Err: err.Error()}
 	}
 
 	if response.StatusCode == http.StatusOK {
@@ -134,11 +134,11 @@ func fetchKrakenResponse(interval string) (*KrakenResultMap, *errorhandling.MyEr
 
 		if err != nil {
 			log.Println("Could not decode Kraken Response")
-			return nil, &errorhandling.MyError{Err: err.Error()}
+			return nil, &errors.MyError{Err: err.Error()}
 		}
 		if len(krakenResponse.Error) > 0 {
 			log.Println(krakenResponse.Error[0])
-			return nil, &errorhandling.MyError{Err: krakenResponse.Error[0]}
+			return nil, &errors.MyError{Err: krakenResponse.Error[0]}
 		}
 		return &krakenResponse.Result, nil
 	} else {
@@ -146,7 +146,7 @@ func fetchKrakenResponse(interval string) (*KrakenResultMap, *errorhandling.MyEr
 		json.NewDecoder(response.Body).Decode(&resp)
 		log.Println(resp)
 		log.Println(fmt.Sprintf("Either the Kraken API is down or the request was incorrect with response code %d", response.StatusCode))
-		return nil, &errorhandling.MyError{Err: "Kraken API error", ErrorCode: http.StatusInternalServerError}
+		return nil, &errors.MyError{Err: "Kraken API error", ErrorCode: http.StatusInternalServerError}
 	}
 }
 

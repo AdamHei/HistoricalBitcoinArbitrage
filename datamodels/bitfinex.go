@@ -3,7 +3,7 @@ package datamodels
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/adamhei/historicalapi/errorhandling"
+	"github.com/adamhei/historicalapi/errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -75,10 +75,10 @@ var quandlBitfinexEndpoint = fmt.Sprintf(quandlEndpoint, quandlApiVersion, bitfi
 // Currently, we only support Bitfinex data through Quandl, whose finest granularity is one day
 //
 // TODO: Add direct Bitfinex API to support intervals shorter than 1 month
-func PollBitfinexHistorical(interval string) ([]PricePoint, *errorhandling.MyError) {
+func PollBitfinexHistorical(interval string) ([]PricePoint, *errors.MyError) {
 	interval = strings.ToUpper(interval)
 	if !quandlIntervals[interval] {
-		return nil, &errorhandling.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
+		return nil, &errors.MyError{Err: fmt.Sprintf("Please provide a valid interval; %s is invalid", interval), ErrorCode: http.StatusBadRequest}
 	}
 
 	quandlResponse, err := fetchQuandlResponse(interval)
@@ -91,7 +91,7 @@ func PollBitfinexHistorical(interval string) ([]PricePoint, *errorhandling.MyErr
 }
 
 // Given the raw 2D Quandl data, convert it to an array of PricePoints
-func parseQuandlBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errorhandling.MyError) {
+func parseQuandlBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errors.MyError) {
 	pricePoints := make([]PricePoint, len(buckets))
 
 	for index, val := range buckets {
@@ -100,14 +100,14 @@ func parseQuandlBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errorhandli
 		err := unmarshalQuandlBucket(val, bucket)
 
 		if err != nil {
-			return nil, &errorhandling.MyError{Err: err.Error()}
+			return nil, &errors.MyError{Err: err.Error()}
 		}
 
 		timestamp, err := time.Parse("2006-01-02", bucket.Date)
 
 		if err != nil {
 			log.Println("Could not parse time from bucket date")
-			return nil, &errorhandling.MyError{Err: "Failure to parse Quandl response", ErrorCode: http.StatusInternalServerError}
+			return nil, &errors.MyError{Err: "Failure to parse Quandl response", ErrorCode: http.StatusInternalServerError}
 		}
 
 		price := strconv.FormatFloat(bucket.Mid, 'f', -1, 64)
@@ -139,10 +139,10 @@ func unmarshalQuandlBucket(jsonBucket []json.RawMessage, bucket *QuandlBucket) e
 // 1. Build the GET request
 // 2. Fetch the historical data from Quandl
 // 3. Return the response if successful, error if not
-func fetchQuandlResponse(interval string) (*QuandlResponse, *errorhandling.MyError) {
+func fetchQuandlResponse(interval string) (*QuandlResponse, *errors.MyError) {
 	requestString, err := buildQuandlRequest(interval)
 	if err != nil {
-		return nil, &errorhandling.MyError{Err: err.Error()}
+		return nil, &errors.MyError{Err: err.Error()}
 	}
 
 	response, err := http.Get(requestString)
@@ -152,7 +152,7 @@ func fetchQuandlResponse(interval string) (*QuandlResponse, *errorhandling.MyErr
 
 	if err != nil {
 		log.Println(fmt.Sprintf("Could not reach %s", requestString))
-		return nil, &errorhandling.MyError{Err: err.Error()}
+		return nil, &errors.MyError{Err: err.Error()}
 	}
 
 	if response.StatusCode == http.StatusOK {
@@ -161,12 +161,12 @@ func fetchQuandlResponse(interval string) (*QuandlResponse, *errorhandling.MyErr
 
 		if err != nil {
 			log.Println("Could not decode Quandl response")
-			return nil, &errorhandling.MyError{Err: err.Error()}
+			return nil, &errors.MyError{Err: err.Error()}
 		}
 		return quandlResponse, nil
 	} else {
 		log.Println(fmt.Sprintf("Their was an error contacting Quandl with response code %d", response.StatusCode))
-		return nil, &errorhandling.MyError{Err: "Quandl API error", ErrorCode: http.StatusInternalServerError}
+		return nil, &errors.MyError{Err: "Quandl API error", ErrorCode: http.StatusInternalServerError}
 	}
 }
 
@@ -204,5 +204,5 @@ func getQuandlStartDate(interval string) string {
 		startTime = startTime.AddDate(0, -1, 0)
 	}
 
-	return startTime.Format("2006-01-02")
+	return startTime.Format(DATELAYOUTSTRING)
 }

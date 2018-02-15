@@ -1,4 +1,4 @@
-package errorhandling
+package errors
 
 type MyError struct {
 	Err string

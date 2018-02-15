@@ -49,6 +49,12 @@ func getRoutes(appContext *handlers.AppContext) []route {
 			Name:        "Index Price (from CoinDesk)",
 			HandlerFunc: appContext.CoinDeskHistorical,
 		},
+		{
+			Method:      http.MethodGet,
+			Path:        "/historical/binance/{interval}",
+			Name:        "Binance Historical",
+			HandlerFunc: appContext.BinanceHistorical,
+		},
 	}
 }
 

@@ -2,7 +2,7 @@ package datamodels
 
 import (
 	"fmt"
-	"github.com/adamhei/historicalapi/errorhandling"
+	"github.com/adamhei/historicalapi/errors"
 	"github.com/adamhei/historicaldata/trademodels"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -11,7 +11,7 @@ import (
 )
 
 // TODO Return array of PricePoints
-func QueryGeminiHistorical(db *mgo.Database, interval string) ([]trademodels.GeminiOrder, *errorhandling.MyError) {
+func QueryGeminiHistorical(db *mgo.Database, interval string) ([]trademodels.GeminiOrder, *errors.MyError) {
 	coll := db.C(trademodels.GeminiCollection)
 
 	startTimeMs := getStartTimeMs(interval)
@@ -31,7 +31,7 @@ func QueryGeminiHistorical(db *mgo.Database, interval string) ([]trademodels.Gem
 	err = query.All(&results)
 
 	if err != nil {
-		return nil, &errorhandling.MyError{Err: err.Error(), ErrorCode: 500}
+		return nil, &errors.MyError{Err: err.Error(), ErrorCode: 500}
 	} else {
 		return results, nil
 	}
