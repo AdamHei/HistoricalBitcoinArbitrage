@@ -39,8 +39,8 @@ var binanceIntervals = map[string]string{
 	YEAR:       "1d",
 	SIXMONTH:   "1d",
 	THREEMONTH: "1d",
-	MONTH:      "1d",
-	WEEK:       "6h",
+	MONTH:      "6h",
+	WEEK:       "1h",
 	DAY:        "15m",
 }
 
