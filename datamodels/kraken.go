@@ -73,7 +73,8 @@ func PollKrakenHistorical(interval string) ([]PricePoint, *errors.MyError) {
 
 // Given the Kraken 2D-price data array, convert it to an array of the universal PricePoint data structure
 func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errors.MyError) {
-	pricePoints := make([]PricePoint, len(buckets))
+	n := len(buckets)
+	pricePoints := make([]PricePoint, n)
 
 	for index, val := range buckets {
 		bucket := new(KrakenBucket)
@@ -84,7 +85,8 @@ func parseKrakenBuckets(buckets [][]json.RawMessage) ([]PricePoint, *errors.MyEr
 			return nil, &errors.MyError{Err: err.Error()}
 		}
 
-		pricePoints[index] = PricePoint{bucket.Timestamp, bucket.Open}
+		// Return the pricepoints in descending order (newest to oldest)
+		pricePoints[n-1-index] = PricePoint{bucket.Timestamp, bucket.Open}
 	}
 	return pricePoints, nil
 }
