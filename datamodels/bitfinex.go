@@ -11,10 +11,12 @@ import (
 	"time"
 )
 
+// Top level response body
 type QuandlResponse struct {
 	DataSetResponse QuandlDataSetResponse `json:"dataset"`
 }
 
+// Mid level response body
 type QuandlDataSetResponse struct {
 	Id                  int64               `json:"id"`
 	DatasetCode         string              `json:"dataset_code"`
@@ -33,6 +35,7 @@ type QuandlDataSetResponse struct {
 	ColumnIndex         json.RawMessage     `json:"column_index"`
 	StartDate           string              `json:"start_date"`
 	EndDate             string              `json:"end_date"`
+	// The only relevant part
 	Data                [][]json.RawMessage `json:"data"`
 	Collapse            json.RawMessage     `json:"collapse"`
 	Order               json.RawMessage     `json:"order"`
@@ -40,17 +43,6 @@ type QuandlDataSetResponse struct {
 }
 
 // Representation of a single Quandl data bucket, e.g.
-//
-// [
-//	"2018-01-13",
-//	14100,
-//	12751,
-//	13801,
-//	13800,
-//	13800,
-//	13802,
-//	37434.61421912
-//],
 type QuandlBucket struct {
 	Date                                   string
 	High, Low, Mid, Last, Bid, Ask, Volume float64
@@ -68,7 +60,6 @@ var quandlIntervals = map[string]bool{
 const quandlApiVersion = "v3"
 const bitfinex = "BITFINEX"
 const bitfinexTicker = "BTCUSD"
-
 var quandlBitfinexEndpoint = fmt.Sprintf(quandlEndpoint, quandlApiVersion, bitfinex, bitfinexTicker)
 
 // Given an interval, check its validity and return all Bitfinex data within that interval, as PricePoints

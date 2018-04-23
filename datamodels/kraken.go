@@ -11,16 +11,19 @@ import (
 	"time"
 )
 
+// Top level Kraken response body
 type KrakenResponse struct {
 	Error  []string        `json:"error"`
 	Result KrakenResultMap `json:"result"`
 }
 
+// Mid-level Kraken response body containing actual price data
 type KrakenResultMap struct {
 	Buckets [][]json.RawMessage `json:"XXBTZUSD"`
 	Last    int64               `json:"last"`
 }
 
+// Represents an individual array of instantaneous price data
 type KrakenBucket struct {
 	Timestamp                            int64
 	Open, High, Low, Close, Vwap, Volume string
@@ -40,6 +43,7 @@ const (
 	fifteenDaysByMinutes = 21600
 )
 
+// Represents which intervals are supported and their corresponding granularity
 var krakenIntervalToGranularity = map[string]int64{
 	TWOYEAR:    oneDayByMinutes,
 	YEAR:       oneDayByMinutes,
@@ -52,7 +56,6 @@ var krakenIntervalToGranularity = map[string]int64{
 
 const krakenApiVersion = "0"
 const krakenEndpoint = "https://api.kraken.com/%s/public/OHLC"
-
 var krakenHistoricalEndpoint = fmt.Sprintf(krakenEndpoint, krakenApiVersion)
 
 // Given an interval, check its validity and return all Kraken BTC data within that interval, by a pre-determined granularity
@@ -63,7 +66,6 @@ func PollKrakenHistorical(interval string) ([]PricePoint, *errors.MyError) {
 	}
 
 	resultMap, err := fetchKrakenResponse(interval)
-
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +125,7 @@ func fetchKrakenResponse(interval string) (*KrakenResultMap, *errors.MyError) {
 	response, err := http.Get(requestString)
 	defer response.Body.Close()
 
-	log.Println(fmt.Sprintf("Queryed %s", requestString))
+	log.Println(fmt.Sprintf("Querying %s", requestString))
 
 	if err != nil {
 		log.Println("Could not reach ", requestString)

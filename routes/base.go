@@ -1,3 +1,4 @@
+// Package routes provides a directory of how to use the Historical API
 package routes
 
 import (
@@ -6,9 +7,24 @@ import (
 	"net/http"
 )
 
+// Wrapper for consistent route definition
 type route struct {
 	Name, Method, Path string
 	HandlerFunc        http.HandlerFunc
+}
+
+// NewRouter constructs and returns a mux Router with all routes in the API
+func NewRouter(appContext *handlers.AppContext) *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
+
+	for _, r := range getRoutes(appContext) {
+		router.Methods(r.Method).
+			Path(r.Path).
+			Name(r.Name).
+			HandlerFunc(r.HandlerFunc)
+	}
+
+	return router
 }
 
 func getRoutes(appContext *handlers.AppContext) []route {
@@ -19,12 +35,12 @@ func getRoutes(appContext *handlers.AppContext) []route {
 			Name:        "Index page",
 			HandlerFunc: appContext.Index,
 		},
-		{
-			Method:      http.MethodGet,
-			Path:        "/historical/gemini",
-			Name:        "Gemini Historical",
-			HandlerFunc: appContext.GeminiHistorical,
-		},
+		//{
+		//	Method:      http.MethodGet,
+		//	Path:        "/historical/gemini",
+		//	Name:        "Gemini Historical",
+		//	HandlerFunc: appContext.GeminiHistorical,
+		//},
 		{
 			Method:      http.MethodGet,
 			Path:        "/historical/gdax/{interval}",
@@ -56,17 +72,4 @@ func getRoutes(appContext *handlers.AppContext) []route {
 			HandlerFunc: appContext.BinanceHistorical,
 		},
 	}
-}
-
-func NewRouter(appContext *handlers.AppContext) *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
-
-	for _, r := range getRoutes(appContext) {
-		router.Methods(r.Method).
-			Path(r.Path).
-			Name(r.Name).
-			HandlerFunc(r.HandlerFunc)
-	}
-
-	return router
 }

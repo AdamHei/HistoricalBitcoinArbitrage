@@ -17,6 +17,7 @@ type timePeriod struct {
 	start, end time.Time
 }
 
+// Supported intervals and their granularities
 var gdaxIntervalToGranularity = map[string]int64{
 	TWOYEAR:    dailyBySeconds,
 	YEAR:       dailyBySeconds,

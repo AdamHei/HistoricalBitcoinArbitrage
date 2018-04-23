@@ -45,10 +45,8 @@ var binanceIntervals = map[string]string{
 }
 
 const BTCUSDT = "BTCUSDT"
-
 const binanceApiVersion = "v1"
 const binanceHistoricalEndpoint = "https://api.binance.com/api/%s/klines"
-
 var binanceEndpoint = fmt.Sprintf(binanceHistoricalEndpoint, binanceApiVersion)
 
 // Given an interval, check its validity and return all open prices within that interval and any relevant errors

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// TODO Return array of PricePoints
+// Deprecated: currently obsolete since we are no longer populating the database with Gemini data
 func QueryGeminiHistorical(db *mgo.Database, interval string) ([]trademodels.GeminiOrder, *errors.MyError) {
 	coll := db.C(trademodels.GeminiCollection)
 

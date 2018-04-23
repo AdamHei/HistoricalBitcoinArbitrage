@@ -12,12 +12,14 @@ import (
 	"time"
 )
 
+// Top level CoinDesk response body
 type CoinDeskResponse struct {
 	BPI        map[string]float64 `json:"bpi"`
 	Disclaimer string             `json:"disclaimer"`
 	Time       CoinDeskTimeData   `json:"time"`
 }
 
+// Not used but part of the response body
 type CoinDeskTimeData struct {
 	Updated    string `json:"updated"`
 	UpdatedIso string `json:"updatedISO"`
@@ -34,7 +36,6 @@ var coinDeskIntervals = map[string]bool{
 
 const coinDeskApiVersion = "v1"
 const coinDeskEndpoint = "https://api.coindesk.com/%s/bpi/historical/open.json"
-
 var coinDeskHistoricalEndpoint = fmt.Sprintf(coinDeskEndpoint, coinDeskApiVersion)
 
 // Given an interval, check its validity and return all CoinDesk Bitcoin Price Index data within that interval, as PricePoints

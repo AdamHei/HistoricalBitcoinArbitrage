@@ -1,3 +1,6 @@
+// Package datamodels interfaces either directly with each exchange's API or with the local database
+//
+// Each datamodel must have a function which returns an array of PricePoints and an optional error
 package datamodels
 
 import "time"
@@ -20,9 +23,11 @@ const (
 const EMPTYSTRING = ""
 const DATELAYOUTSTRING = "2006-01-02"
 
+// Lots of exchanges are accessed through Quandl, so we keep the common endpoint here
 const quandlEndpoint = "https://www.quandl.com/api/%s/datasets/%s/%s.json"
 
 // The uniform data structure returned to the client independent of exchange
+// Represents a price at a specific point in time
 type PricePoint struct {
 	Timestamp int64  `json:"timestamp"`
 	Price     string `json:"price"`
