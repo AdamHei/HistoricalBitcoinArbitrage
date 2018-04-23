@@ -3,10 +3,10 @@ This package is a web service which provides historical Bitcoin price data acros
 
 It is part of the Bitcoin Arbitrage Analysis Honors Project
 
-##Usage
+## Usage
 `go run main.go`
 
-##Currently supported exchanges
+## Currently supported exchanges
 - Binance
 - Bitfinex
 - Coindesk (for Bitcoin Index price)
