@@ -71,5 +71,11 @@ func getRoutes(appContext *handlers.AppContext) []route {
 			Name:        "Binance Historical",
 			HandlerFunc: appContext.BinanceHistorical,
 		},
+		{
+			Method:      http.MethodGet,
+			Path:        "/historical/bitstamp/{interval}",
+			Name:        "Bitstamp Historical",
+			HandlerFunc: appContext.BitstampHistorical,
+		},
 	}
 }

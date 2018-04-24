@@ -38,7 +38,7 @@ func respond(writer http.ResponseWriter, data interface{}, err *errors.MyError) 
 		if errCode == 0 {
 			errCode = http.StatusInternalServerError
 		}
-		http.Error(writer, err.Err, err.ErrorCode)
+		http.Error(writer, err.Err, errCode)
 	} else {
 		json.NewEncoder(writer).Encode(data)
 	}
