@@ -20,16 +20,13 @@ func main() {
 	}
 	sesh, err := mgo.DialWithInfo(mgoDialInfo)
 	defer sesh.Close()
-
 	if err != nil {
 		log.Println("Could not connect to DB")
 		panic(err)
 	}
 
 	db := sesh.DB(trademodels.DbName)
-
 	appContext := &handlers.AppContext{Db: db}
 	router := routes.NewRouter(appContext)
-
 	log.Fatal(http.ListenAndServe(":80", router))
 }

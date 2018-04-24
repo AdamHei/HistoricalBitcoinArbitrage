@@ -3,6 +3,9 @@ This package is a web service which provides historical Bitcoin price data acros
 
 It is part of the Bitcoin Arbitrage Analysis Honors Project
 
+## Installation
+`go get github.com/adamhei/historicalapi`
+
 ## Usage
 `go run main.go`
 
